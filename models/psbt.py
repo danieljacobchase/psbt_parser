@@ -3,86 +3,13 @@ PSBT data structure classes
 """
 import json
 from enum import Enum
+from models.constants import PSBT_GLOBAL_TYPES, PSBT_IN_TYPES, PSBT_OUT_TYPES
 
 class PSBTMapType(Enum):
     """Enum for PSBT map types."""
     GLOBAL = "GLOBAL"
     INPUT = "INPUT"
     OUTPUT = "OUTPUT"
-
-# Global Key Types Dictionary (BIP-174)
-PSBT_GLOBAL_TYPES = {
-    0: "PSBT_GLOBAL_UNSIGNED_TX",
-    1: "PSBT_GLOBAL_XPUB",
-    2: "PSBT_GLOBAL_TX_VERSION",
-    3: "PSBT_GLOBAL_FALLBACK_LOCKTIME",
-    4: "PSBT_GLOBAL_INPUT_COUNT",
-    5: "PSBT_GLOBAL_OUTPUT_COUNT",
-    6: "PSBT_GLOBAL_TX_MODIFIABLE",
-    7: "PSBT_GLOBAL_SP_ECDH_SHARE",
-    8: "PSBT_GLOBAL_SP_DLEQ_PROOF",
-    251: "PSBT_GLOBAL_VERSION",
-    252: "PSBT_GLOBAL_PROPRIETARY"
-}
-
-# Per-Input Key Types Dictionary (BIP-174)
-PSBT_IN_TYPES = {
-    0: "PSBT_IN_NON_WITNESS_UTXO",
-    1: "PSBT_IN_WITNESS_UTXO",
-    2: "PSBT_IN_PARTIAL_SIG",
-    3: "PSBT_IN_SIGHASH_TYPE",
-    4: "PSBT_IN_REDEEM_SCRIPT",
-    5: "PSBT_IN_WITNESS_SCRIPT",
-    6: "PSBT_IN_BIP32_DERIVATION",
-    7: "PSBT_IN_FINAL_SCRIPTSIG",
-    8: "PSBT_IN_FINAL_SCRIPTWITNESS",
-    9: "PSBT_IN_POR_COMMITMENT",
-    10: "PSBT_IN_RIPEMD160",
-    11: "PSBT_IN_SHA256",
-    12: "PSBT_IN_HASH160",
-    13: "PSBT_IN_HASH256",
-    14: "PSBT_IN_PREVIOUS_TXID",
-    15: "PSBT_IN_OUTPUT_INDEX",
-    16: "PSBT_IN_SEQUENCE",
-    17: "PSBT_IN_REQUIRED_TIME_LOCKTIME",
-    18: "PSBT_IN_REQUIRED_HEIGHT_LOCKTIME",
-    19: "PSBT_IN_TAP_KEY_SIG",
-    20: "PSBT_IN_TAP_SCRIPT_SIG",
-    21: "PSBT_IN_TAP_LEAF_SCRIPT",
-    22: "PSBT_IN_TAP_BIP32_DERIVATION",
-    23: "PSBT_IN_TAP_INTERNAL_KEY",
-    24: "PSBT_IN_TAP_MERKLE_ROOT",
-    26: "PSBT_IN_MUSIG2_PUB_NONCE",
-    27: "PSBT_IN_MUSIG2_PARTICIPANT_PUBKEYS",
-    28: "PSBT_IN_MUSIG2_PARTIAL_SIG",
-    29: "PSBT_IN_SP_ECDH_SHARE",
-    30: "PSBT_IN_SP_DLEQ_PROOF",
-    252: "PSBT_IN_PROPRIETARY"
-}
-
-# Per-Output Key Types Dictionary (BIP-174)
-PSBT_OUT_TYPES = {
-    0: "PSBT_OUT_REDEEM_SCRIPT",
-    1: "PSBT_OUT_WITNESS_SCRIPT",
-    2: "PSBT_OUT_BIP32_DERIVATION",
-    3: "PSBT_OUT_AMOUNT",
-    4: "PSBT_OUT_SCRIPT",
-    5: "PSBT_OUT_TAP_INTERNAL_KEY",
-    6: "PSBT_OUT_TAP_TREE",
-    7: "PSBT_OUT_TAP_BIP32_DERIVATION",
-    252: "PSBT_OUT_PROPRIETARY"
-}
-
-# Automatically create constants from dictionaries
-globals().update({name: value for value, name in PSBT_GLOBAL_TYPES.items()})
-globals().update({name: value for value, name in PSBT_IN_TYPES.items()})
-globals().update({name: value for value, name in PSBT_OUT_TYPES.items()})
-
-# Export all constants and classes for wildcard import
-__all__ = [
-    'PSBTKey', 'PSBTVal', 'PSBTKeyVal', 'PSBTMap', 'PSBT', 'PSBTMapType',
-    'PSBT_GLOBAL_TYPES', 'PSBT_IN_TYPES', 'PSBT_OUT_TYPES',
-] + list(PSBT_GLOBAL_TYPES.values()) + list(PSBT_IN_TYPES.values()) + list(PSBT_OUT_TYPES.values())
 
 class PSBTKey:
     def __init__(self, key_len: int, key_type: int, key_data: bytes, map_type: PSBTMapType):
@@ -153,4 +80,66 @@ class PSBT:
             "global_map": json.loads(self.global_map.to_string()),
             "input_maps": [json.loads(input_map.to_string()) for input_map in self.input_maps],
             "output_maps": [json.loads(output_map.to_string()) for output_map in self.output_maps]
+        }, indent=2)
+
+
+class PSBTInOutInfo:
+    """Information about a PSBT input or output."""
+
+    def __init__(self, amount: int, address_type: str, script_type: str):
+        """
+        Initialize a PSBTInOutInfo object.
+
+        Args:
+            amount: Amount in satoshis
+            address_type: Type of address (e.g., "P2PKH", "P2WPKH", "P2SH")
+            script_type: Type of script (e.g., "legacy", "segwit", "taproot")
+        """
+        self.amount = amount
+        self.address_type = address_type
+        self.script_type = script_type
+
+    def to_string(self):
+        """Convert to JSON string representation."""
+        return json.dumps({
+            "amount": self.amount,
+            "address_type": self.address_type,
+            "script_type": self.script_type
+        }, indent=2)
+
+
+class PSBTInfo:
+    """Information extracted from a PSBT."""
+
+    def __init__(self, total_input_amt: int, total_output_amt: int, fee_amt: int, fee_rate: float, change_index: int, inputs: list, outputs: list):
+        """
+        Initialize a PSBTInfo object.
+
+        Args:
+            total_input_amt: Total input amount in satoshis
+            total_output_amt: Total output amount in satoshis
+            fee_amt: Transaction fee in satoshis
+            fee_rate: Fee rate in sats/vbyte
+            change_index: Index of the change output (-1 if no change)
+            inputs: List of input information
+            outputs: List of output information
+        """
+        self.total_input_amt = total_input_amt
+        self.total_output_amt = total_output_amt
+        self.fee_amt = fee_amt
+        self.fee_rate = fee_rate
+        self.change_index = change_index
+        self.inputs = inputs
+        self.outputs = outputs
+
+    def to_string(self):
+        """Convert to JSON string representation."""
+        return json.dumps({
+            "total_input_amt": self.total_input_amt,
+            "total_output_amt": self.total_output_amt,
+            "fee_amt": self.fee_amt,
+            "fee_rate": self.fee_rate,
+            "change_index": self.change_index,
+            "inputs": [json.loads(inp.to_string()) for inp in self.inputs],
+            "outputs": [json.loads(out.to_string()) for out in self.outputs]
         }, indent=2)

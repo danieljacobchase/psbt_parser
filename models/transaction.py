@@ -4,13 +4,14 @@ Bitcoin transaction data structure classes
 import json
 
 class Transaction:
-    def __init__(self, version: int, witness_flag: int, inputs: list, outputs: list, witness, locktime: int):
+    def __init__(self, version: int, witness_flag: int, inputs: list, outputs: list, witness, locktime: int, vbytes: float):
         self.version = version
         self.witness_flag = witness_flag
         self.inputs = inputs
         self.outputs = outputs
         self.witness = witness
         self.locktime = locktime
+        self.vbytes = vbytes
 
     def to_string(self):
         return json.dumps({
@@ -19,7 +20,8 @@ class Transaction:
             "inputs": [json.loads(inp.to_string()) for inp in self.inputs],
             "outputs": [json.loads(out.to_string()) for out in self.outputs],
             "witness": self.witness,
-            "locktime": self.locktime.hex()
+            "locktime": self.locktime.hex(),
+            "vbytes": self.vbytes
         }, indent=2)
 
     def get_input_count(self):
