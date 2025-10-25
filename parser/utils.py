@@ -60,3 +60,18 @@ def print_bytes(bytes):
         bytes (bytes): Byte data to display in hex format.
     """
     print(bytes.hex())
+
+def get_remaining_bytes(buffer):
+    """Get the number of remaining bytes in a buffer.
+
+    Args:
+        buffer (BytesIO): Buffer to check.
+
+    Returns:
+        int: Number of bytes remaining from current position to end.
+    """
+    current_pos = buffer.tell()
+    buffer.seek(0, 2)  # Seek to end
+    end_pos = buffer.tell()
+    buffer.seek(current_pos)  # Seek back to current position
+    return end_pos - current_pos

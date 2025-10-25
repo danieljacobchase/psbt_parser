@@ -25,23 +25,21 @@ class PSBTKeyParser:
         Returns:
             PsbtKeyInWitnessUTXO: Parsed witness UTXO information
         """
+        from parser.utils import parse_compact_size
         buffer = BytesIO(data)
 
-        # retrieve UTXO amount in sats
+        # retrieve UTXO amount in sats (8 bytes)
         amount = buffer.read(8)
 
-        # verify opcodes
-        op_0 = buffer.read(1)
-        assert op_0 == OP_0
-        op_20 = buffer.read(1)
-        assert op_20 == OP_PUSHBYTES_20
+        # read script length as compact size
+        script_len, _ = parse_compact_size(buffer)
 
-        # retrieve script hash
-        script_hash = buffer.read(20)
+        # retrieve scriptPubKey
+        script = buffer.read(script_len)
 
         return PsbtKeyInWitnessUTXO(
             amount = int.from_bytes(amount, "little"),
-            script_hash = script_hash.hex()
+            script_hash = script.hex()
         )
 
     @staticmethod

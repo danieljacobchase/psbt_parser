@@ -51,7 +51,7 @@ class MempoolAPI:
         except (json.JSONDecodeError, Exception):
             return None
 
-    def get_recommended_fee_rate(self):
+    def get_recommendeed_fee_rates(self):
         """
         Fetch recommended fee rate.
 

@@ -60,11 +60,14 @@ class PSBTParser:
             input_ct = transaction.get_input_count()
             output_ct = transaction.get_output_count()
         else: # search for type keys 04 and 05 in global map, which are input and output counts, respectively
+            # Initialize with 0 for creator-stage PSBTs that may not have counts yet
+            input_ct = 0
+            output_ct = 0
             for key_val in global_map.map:
                 if key_val.key.key_type == PSBT_GLOBAL_INPUT_COUNT:
-                    input_ct = key_val.val.val_data
+                    input_ct, _ = parse_compact_size(BytesIO(key_val.val.val_data))
                 if key_val.key.key_type == PSBT_GLOBAL_OUTPUT_COUNT:
-                    output_ct = key_val.val.val_data
+                    output_ct, _ = parse_compact_size(BytesIO(key_val.val.val_data))
 
         # Parse input maps
         input_maps = [PSBTParser.parse_map(buffer, PSBTMapType.INPUT) for _ in range(input_ct)]

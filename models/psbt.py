@@ -111,35 +111,41 @@ class PSBTInOutInfo:
 class PSBTInfo:
     """Information extracted from a PSBT."""
 
-    def __init__(self, total_input_amt: int, total_output_amt: int, fee_amt: int, fee_rate: float, change_index: int, inputs: list, outputs: list):
+    def __init__(self, version: int, total_input_amt: int, total_output_amt: int, fee_amt: int, fee_rate: float, change_output: list[bool], inputs: list, outputs: list):
         """
         Initialize a PSBTInfo object.
 
         Args:
+            version: PSBT version (0 or 2)
             total_input_amt: Total input amount in satoshis
             total_output_amt: Total output amount in satoshis
             fee_amt: Transaction fee in satoshis
             fee_rate: Fee rate in sats/vbyte
-            change_index: Index of the change output (-1 if no change)
+            change_output: Bool array indicating which outputs are change
             inputs: List of input information
             outputs: List of output information
         """
+        self.version = version
         self.total_input_amt = total_input_amt
         self.total_output_amt = total_output_amt
         self.fee_amt = fee_amt
         self.fee_rate = fee_rate
-        self.change_index = change_index
+        self.change_output = change_output
         self.inputs = inputs
         self.outputs = outputs
 
     def to_string(self):
         """Convert to JSON string representation."""
+        # Convert bool array to string representation
+        change_output_str = [str(is_change) for is_change in self.change_output]
+
         return json.dumps({
+            "version": self.version,
             "total_input_amt": self.total_input_amt,
             "total_output_amt": self.total_output_amt,
             "fee_amt": self.fee_amt,
             "fee_rate": self.fee_rate,
-            "change_index": self.change_index,
+            "change_output": change_output_str,
             "inputs": [json.loads(inp.to_string()) for inp in self.inputs],
             "outputs": [json.loads(out.to_string()) for out in self.outputs]
         }, indent=2)

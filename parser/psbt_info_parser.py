@@ -63,14 +63,17 @@ class PSBTInfoParser:
             base_size += 4 # vout
             base_size += 1 # script size (estimate)
             base_size += 4 # sequence number
-            if input_map.key.key_type == PSBT_IN_WITNESS_SCRIPT:
-                witness_size += len(input_map.val.val_data)
-                is_segwit = True
-            elif input_map.key.key_type == PSBT_IN_FINAL_SCRIPTSIG:
-                base_size += len(input_map.val.val_data)
-            elif input_map.key.key_type == PSBT_IN_FINAL_SCRIPTWITNESS:
-                witness_size += len(input_map.val.val_data)
-                is_segwit = True
+
+            # Iterate through key-value pairs in this input map
+            for key_val in input_map.map:
+                if key_val.key.key_type == PSBT_IN_WITNESS_SCRIPT:
+                    witness_size += len(key_val.val.val_data)
+                    is_segwit = True
+                elif key_val.key.key_type == PSBT_IN_FINAL_SCRIPTSIG:
+                    base_size += len(key_val.val.val_data)
+                elif key_val.key.key_type == PSBT_IN_FINAL_SCRIPTWITNESS:
+                    witness_size += len(key_val.val.val_data)
+                    is_segwit = True
 
         # If SegWit, add witness size to base size
         if is_segwit:
@@ -80,8 +83,11 @@ class PSBTInfoParser:
         for output_map in output_map_list:
             base_size += 8 # amount
             base_size += 1 # script size (estimate)
-            if output_map.key.key_type == PSBT_OUT_SCRIPT:
-                base_size += len(output_map.val.val_data)
+
+            # Iterate through key-value pairs in this output map
+            for key_val in output_map.map:
+                if key_val.key.key_type == PSBT_OUT_SCRIPT:
+                    base_size += len(key_val.val.val_data)
 
         # Calculate weight and vbytes
         weight = (base_size * 4) + witness_size
@@ -164,7 +170,8 @@ class PSBTInfoParser:
             if psbt.version == 0:
                 output_index = int.from_bytes(this_tx.inputs[i].vout, 'little')
             else:
-                output_index = PSBTKeyParser.parse_key_PSBT_IN_OUTPUT_INDEX(input_map.map[PSBT_IN_OUTPUT_INDEX].val.val_data)
+                output_index_key = PSBTInfoParser.find_key_index(input_map, PSBT_IN_OUTPUT_INDEX)
+                output_index = PSBTKeyParser.parse_key_PSBT_IN_OUTPUT_INDEX(input_map.map[output_index_key].val.val_data)
 
             if non_witness_utxo_index != -1:
                 # parse non-witness UTXO
@@ -207,9 +214,11 @@ class PSBTInfoParser:
             for i in range(len(psbt.output_maps)):
                 output_map = psbt.output_maps[i]
                 # get amount from output map
-                amount = PSBTKeyParser.parse_key_PSBT_OUT_AMOUNT(output_map.map[PSBT_OUT_AMOUNT].val.val_data)
+                amount_key = PSBTInfoParser.find_key_index(output_map, PSBT_OUT_AMOUNT)
+                amount = PSBTKeyParser.parse_key_PSBT_OUT_AMOUNT(output_map.map[amount_key].val.val_data)
                 # determine script type
-                script_type = PSBTInfoParser.determine_script_type(PSBTKeyParser.parse_key_PSBT_OUT_SCRIPT(output_map.map[PSBT_OUT_SCRIPT].val.val_data))
+                script_key = PSBTInfoParser.find_key_index(output_map, PSBT_OUT_SCRIPT)
+                script_type = PSBTInfoParser.determine_script_type(PSBTKeyParser.parse_key_PSBT_OUT_SCRIPT(output_map.map[script_key].val.val_data))
                 # determine address type
                 address_type = PSBTInfoParser.SCRIPT_TYPE_TO_ADDRESS_TYPE.get(script_type, "Unknown")
                 # add to output list
@@ -227,19 +236,14 @@ class PSBTInfoParser:
             vbytes = PSBTInfoParser.get_vbytes_v2(psbt.input_maps, psbt.output_maps)
         fee_rate = fee / vbytes
 
-        # Get change indices if present (can have multiple change outputs)
-        change_indices = []
+        # Create change output bool array
+        change_output = [False] * len(output_list)
         for i in range(len(psbt.output_maps)):
             output_map = psbt.output_maps[i]
             # Look for BIP32 derivation path in this output
             deriv_index = PSBTInfoParser.find_key_index(output_map, PSBT_OUT_BIP32_DERIVATION)
             if deriv_index != -1:
                 derivation = PSBTKeyParser.parse_key_PSBT_OUT_BIP32_DERIVATION(output_map.map[deriv_index].val.val_data)
-                # Check if this is a change output (change index == 1)
-                if derivation.is_change:
-                    change_indices.append(i)
+                change_output[i] = derivation.is_change
 
-        # For backwards compatibility, use first change index or -1
-        change_index = change_indices[0] if change_indices else -1
-
-        return PSBTInfo(input_total, output_total, fee, fee_rate, change_index, input_list, output_list)
+        return PSBTInfo(psbt.version, input_total, output_total, fee, fee_rate, change_output, input_list, output_list)

@@ -2,7 +2,7 @@
 Bitcoin transaction parsing functions
 """
 from models.transaction import Transaction, TXInput, TXOutput, TXWitnessStack, TXWitnessStackItem
-from .utils import parse_compact_size, peek_byte
+from .utils import parse_compact_size, peek_byte, get_remaining_bytes
 
 
 class TransactionParser:
@@ -33,7 +33,8 @@ class TransactionParser:
         # Check if transaction is SegWit
         if peek_byte(buffer) == b'\x00': # segwit transaction
             is_segwit = True
-            witness_flag = buffer.read(1) # consume the 0x00 byte
+            marker = buffer.read(1) # consume the 0x00 marker byte
+            witness_flag = buffer.read(1) # consume the 0x01 flag byte
 
         # Parse inputs and outputs
         input_ct, _ = parse_compact_size(buffer)
@@ -45,9 +46,9 @@ class TransactionParser:
         witness_stacks = []
         witness_size = 0
         if is_segwit:
-            witness_size = len(buffer) - 4
+            witness_size = get_remaining_bytes(buffer) - 4  # Minus 4 bytes for locktime
             witness_stacks.append(TransactionParser.parse_witness(buffer, input_ct))
-            
+
         # Read locktime
         locktime = buffer.read(4)
 
