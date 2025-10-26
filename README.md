@@ -40,7 +40,7 @@ PSBTs move through workflow stages:
 
 ```
 psbt_parser/
-├── main.py                    # CLI entry point
+├── psbt_parser.py                    # CLI entry point
 ├── psbt_report.py            # Human-readable output formatting
 ├── models/                   # Data structure definitions
 │   ├── constants.py          # Bitcoin constants & PSBT key type mappings
@@ -85,10 +85,10 @@ Parse and analyze a PSBT file (supports both hex-encoded and binary formats):
 
 ```bash
 # Hex-encoded PSBT (.txt)
-python main.py sample_data/raw/v0_p2wpkh_3_finalizer.txt
+python psbt_parser.py sample_data/raw/v0_p2wpkh_3_finalizer.txt
 
 # Binary PSBT (.psbt)
-python main.py sample_data/psbt/v0_p2wpkh_3_finalizer.psbt
+python psbt_parser.py sample_data/psbt/v0_p2wpkh_3_finalizer.psbt
 ```
 
 ### Input Format
@@ -142,7 +142,7 @@ Recommended Fee Rates (mempool.space):
 
 **Early-stage PSBTs** (creator/constructor without UTXO data):
 ```bash
-python main.py sample_data/raw/v2_p2wpkh_0_creator.txt
+python psbt_parser.py sample_data/raw/v2_p2wpkh_0_creator.txt
 ```
 Output:
 ```
@@ -156,7 +156,7 @@ Outputs: 0
 
 **Fully-signed PSBTs** (finalizer stage):
 ```bash
-python main.py sample_data/raw/v0_multisig_5_finalizer.txt
+python psbt_parser.py sample_data/raw/v0_multisig_5_finalizer.txt
 ```
 
 ## Running Tests
@@ -235,24 +235,24 @@ All tests are **unit tests** that verify function-level behavior with crafted in
 
 ```bash
 # Parse a finalizer-stage PSBT (ready to broadcast) - hex format
-python main.py sample_data/raw/v0_p2wpkh_3_finalizer.txt
+python psbt_parser.py sample_data/raw/v0_p2wpkh_3_finalizer.txt
 ```
 
 ### Analyzing a Multisig Transaction
 
 ```bash
 # Parse a 2-of-2 multisig PSBT after both signatures - binary format
-python main.py sample_data/psbt/v0_multisig_5_finalizer.psbt
+python psbt_parser.py sample_data/psbt/v0_multisig_5_finalizer.psbt
 ```
 
 ### Comparing v0 vs v2 Formats
 
 ```bash
 # PSBT v0 format
-python main.py sample_data/raw/v0_p2wpkh_3_finalizer.txt
+python psbt_parser.py sample_data/raw/v0_p2wpkh_3_finalizer.txt
 
 # PSBT v2 format
-python main.py sample_data/raw/v2_p2wpkh_4_finalizer.txt
+python psbt_parser.py sample_data/raw/v2_p2wpkh_4_finalizer.txt
 ```
 
 ## Implementation Details

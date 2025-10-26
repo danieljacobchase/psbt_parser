@@ -12,7 +12,7 @@ from psbt_report import PSBTReport
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python main.py <filename>", file=sys.stderr)
+        print("Usage: python psbt_parser.py <filename>", file=sys.stderr)
         sys.exit(1)
 
     # Read PSBT from file and load into buffer
