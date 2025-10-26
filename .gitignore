@@ -17,3 +17,14 @@ ENV/
 
 # OS
 .DS_Store
+
+# Testing and coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/

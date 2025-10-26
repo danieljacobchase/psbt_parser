@@ -301,7 +301,7 @@ class TestParseTransaction:
         tx = TransactionParser.parse_transaction(buffer)
 
         assert tx.version == version
-        assert tx.witness_flag == flag
+        assert tx.witness_flag == int.from_bytes(flag, byteorder='little')
         assert len(tx.witness) == 1
         assert tx.vbytes > 0
 
@@ -354,18 +354,27 @@ class TestParseTransaction:
         expected_size = len(tx_data)
         assert tx.vbytes == expected_size
 
-    def test_parse_transaction_empty_inputs_outputs(self):
-        """Test parsing transaction with zero inputs/outputs"""
+    def test_parse_transaction_minimal_valid(self):
+        """Test parsing minimal valid transaction with 1 input and 1 output"""
         version = b'\x01\x00\x00\x00'
-        input_count = b'\x00'
-        output_count = b'\x00'
+        # 1 input
+        input_count = b'\x01'
+        txid = b'\xaa' * 32
+        vout = b'\x00\x00\x00\x00'
+        ss_size = b'\x00'
+        seq = b'\xff\xff\xff\xff'
+        # 1 output
+        output_count = b'\x01'
+        amount = (1000).to_bytes(8, 'little')
+        spk = b'\x76\xa9\x14' + b'\xbb' * 20 + b'\x88\xac'  # P2PKH script
+        spk_size = bytes([len(spk)])
         locktime = b'\x00\x00\x00\x00'
 
-        tx_data = version + input_count + output_count + locktime
+        tx_data = version + input_count + txid + vout + ss_size + seq + output_count + amount + spk_size + spk + locktime
 
         buffer = BytesIO(tx_data)
         tx = TransactionParser.parse_transaction(buffer)
 
-        assert len(tx.inputs) == 0
-        assert len(tx.outputs) == 0
-        assert (tx.witness_flag == 0 or tx.witness_flag == b'\x00')
+        assert len(tx.inputs) == 1
+        assert len(tx.outputs) == 1
+        assert tx.witness_flag == 0

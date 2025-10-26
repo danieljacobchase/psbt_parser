@@ -75,7 +75,7 @@ class PSBTParser:
         # Parse output maps
         output_maps = [PSBTParser.parse_map(buffer, PSBTMapType.OUTPUT) for _ in range(output_ct)]
 
-        return PSBT(psbt_version, global_map, input_maps, output_maps)
+        return PSBT(version=psbt_version, global_map=global_map, input_maps=input_maps, output_maps=output_maps)
 
     @staticmethod
     def parse_map(buffer, map_type: PSBTMapType):
@@ -97,7 +97,7 @@ class PSBTParser:
             key_val = PSBTParser.parse_key_val(buffer, map_type)
             map.append(key_val)
         buffer.read(1) # consume the 0x00 byte
-        return PSBTMap(map)
+        return PSBTMap(map=map)
 
     @staticmethod
     def parse_key_val(buffer, map_type: PSBTMapType):
@@ -112,7 +112,7 @@ class PSBTParser:
         """
         key = PSBTParser.parse_key(buffer, map_type)
         val = PSBTParser.parse_val(buffer)
-        return PSBTKeyVal(key, val)
+        return PSBTKeyVal(key=key, val=val)
 
     @staticmethod
     def parse_key(buffer, map_type: PSBTMapType):
@@ -131,7 +131,7 @@ class PSBTParser:
         key_len, _ = parse_compact_size(buffer)
         key_type, key_type_len = parse_compact_size(buffer)
         key_data = buffer.read(key_len - key_type_len)
-        return PSBTKey(key_len, key_type, key_data, map_type)
+        return PSBTKey(key_len=key_len, key_type=key_type, key_data=key_data, type=map_type)
 
     @staticmethod
     def parse_val(buffer):
@@ -147,5 +147,5 @@ class PSBTParser:
         """
         val_len, _ = parse_compact_size(buffer)
         val_data = buffer.read(val_len)
-        return PSBTVal(val_len, val_data)
+        return PSBTVal(val_len=val_len, val_data=val_data)
 

@@ -31,29 +31,29 @@ class TestFindKeyIndex:
 
     def test_find_key_index_first_position(self):
         """Test finding key at first position"""
-        key1 = PSBTKey(1, 0x01, b'', PSBTMapType.INPUT)
-        val1 = PSBTVal(1, b'\xaa')
-        key2 = PSBTKey(1, 0x02, b'', PSBTMapType.INPUT)
-        val2 = PSBTVal(1, b'\xbb')
+        key1 = PSBTKey(key_len=1, key_type=0x01, key_data=b'', type=PSBTMapType.INPUT)
+        val1 = PSBTVal(val_len=1, val_data=b'\xaa')
+        key2 = PSBTKey(key_len=1, key_type=0x02, key_data=b'', type=PSBTMapType.INPUT)
+        val2 = PSBTVal(val_len=1, val_data=b'\xbb')
 
-        psbt_map = PSBTMap([PSBTKeyVal(key1, val1), PSBTKeyVal(key2, val2)])
+        psbt_map = PSBTMap(map=[PSBTKeyVal(key=key1, val=val1), PSBTKeyVal(key=key2, val=val2)])
 
         index = PSBTInfoParser.find_key_index(psbt_map, 0x01)
         assert index == 0
 
     def test_find_key_index_middle_position(self):
         """Test finding key in middle of map"""
-        key1 = PSBTKey(1, 0x01, b'', PSBTMapType.INPUT)
-        val1 = PSBTVal(1, b'\xaa')
-        key2 = PSBTKey(1, 0x02, b'', PSBTMapType.INPUT)
-        val2 = PSBTVal(1, b'\xbb')
-        key3 = PSBTKey(1, 0x03, b'', PSBTMapType.INPUT)
-        val3 = PSBTVal(1, b'\xcc')
+        key1 = PSBTKey(key_len=1, key_type=0x01, key_data=b'', type=PSBTMapType.INPUT)
+        val1 = PSBTVal(val_len=1, val_data=b'\xaa')
+        key2 = PSBTKey(key_len=1, key_type=0x02, key_data=b'', type=PSBTMapType.INPUT)
+        val2 = PSBTVal(val_len=1, val_data=b'\xbb')
+        key3 = PSBTKey(key_len=1, key_type=0x03, key_data=b'', type=PSBTMapType.INPUT)
+        val3 = PSBTVal(val_len=1, val_data=b'\xcc')
 
-        psbt_map = PSBTMap([
-            PSBTKeyVal(key1, val1),
-            PSBTKeyVal(key2, val2),
-            PSBTKeyVal(key3, val3)
+        psbt_map = PSBTMap(map=[
+            PSBTKeyVal(key=key1, val=val1),
+            PSBTKeyVal(key=key2, val=val2),
+            PSBTKeyVal(key=key3, val=val3)
         ])
 
         index = PSBTInfoParser.find_key_index(psbt_map, 0x02)
@@ -61,40 +61,40 @@ class TestFindKeyIndex:
 
     def test_find_key_index_last_position(self):
         """Test finding key at last position"""
-        key1 = PSBTKey(1, 0x01, b'', PSBTMapType.INPUT)
-        val1 = PSBTVal(1, b'\xaa')
-        key2 = PSBTKey(1, 0x02, b'', PSBTMapType.INPUT)
-        val2 = PSBTVal(1, b'\xbb')
+        key1 = PSBTKey(key_len=1, key_type=0x01, key_data=b'', type=PSBTMapType.INPUT)
+        val1 = PSBTVal(val_len=1, val_data=b'\xaa')
+        key2 = PSBTKey(key_len=1, key_type=0x02, key_data=b'', type=PSBTMapType.INPUT)
+        val2 = PSBTVal(val_len=1, val_data=b'\xbb')
 
-        psbt_map = PSBTMap([PSBTKeyVal(key1, val1), PSBTKeyVal(key2, val2)])
+        psbt_map = PSBTMap(map=[PSBTKeyVal(key=key1, val=val1), PSBTKeyVal(key=key2, val=val2)])
 
         index = PSBTInfoParser.find_key_index(psbt_map, 0x02)
         assert index == 1
 
     def test_find_key_index_not_found(self):
         """Test finding key that doesn't exist"""
-        key1 = PSBTKey(1, 0x01, b'', PSBTMapType.INPUT)
-        val1 = PSBTVal(1, b'\xaa')
-        key2 = PSBTKey(1, 0x02, b'', PSBTMapType.INPUT)
-        val2 = PSBTVal(1, b'\xbb')
+        key1 = PSBTKey(key_len=1, key_type=0x01, key_data=b'', type=PSBTMapType.INPUT)
+        val1 = PSBTVal(val_len=1, val_data=b'\xaa')
+        key2 = PSBTKey(key_len=1, key_type=0x02, key_data=b'', type=PSBTMapType.INPUT)
+        val2 = PSBTVal(val_len=1, val_data=b'\xbb')
 
-        psbt_map = PSBTMap([PSBTKeyVal(key1, val1), PSBTKeyVal(key2, val2)])
+        psbt_map = PSBTMap(map=[PSBTKeyVal(key=key1, val=val1), PSBTKeyVal(key=key2, val=val2)])
 
         index = PSBTInfoParser.find_key_index(psbt_map, 0x99)
         assert index == -1
 
     def test_find_key_index_empty_map(self):
         """Test finding key in empty map"""
-        psbt_map = PSBTMap([])
+        psbt_map = PSBTMap(map=[])
 
         index = PSBTInfoParser.find_key_index(psbt_map, 0x01)
         assert index == -1
 
     def test_find_key_index_witness_utxo(self):
         """Test finding PSBT_IN_WITNESS_UTXO key"""
-        key = PSBTKey(1, PSBT_IN_WITNESS_UTXO, b'', PSBTMapType.INPUT)
-        val = PSBTVal(30, b'\x00' * 30)
-        psbt_map = PSBTMap([PSBTKeyVal(key, val)])
+        key = PSBTKey(key_len=1, key_type=PSBT_IN_WITNESS_UTXO, key_data=b'', type=PSBTMapType.INPUT)
+        val = PSBTVal(val_len=30, val_data=b'\x00' * 30)
+        psbt_map = PSBTMap(map=[PSBTKeyVal(key=key, val=val)])
 
         index = PSBTInfoParser.find_key_index(psbt_map, PSBT_IN_WITNESS_UTXO)
         assert index == 0
@@ -171,14 +171,14 @@ class TestGetVbytesV2:
     def test_get_vbytes_v2_single_legacy_input(self):
         """Test vbytes calculation for single legacy input"""
         # Create a simple input map with final scriptSig
-        key_scriptsig = PSBTKey(1, PSBT_IN_FINAL_SCRIPTSIG, b'', PSBTMapType.INPUT)
-        val_scriptsig = PSBTVal(50, b'\x00' * 50)  # 50-byte scriptSig
-        input_map = PSBTMap([PSBTKeyVal(key_scriptsig, val_scriptsig)])
+        key_scriptsig = PSBTKey(key_len=1, key_type=PSBT_IN_FINAL_SCRIPTSIG, key_data=b'', type=PSBTMapType.INPUT)
+        val_scriptsig = PSBTVal(val_len=50, val_data=b'\x00' * 50)  # 50-byte scriptSig
+        input_map = PSBTMap(map=[PSBTKeyVal(key=key_scriptsig, val=val_scriptsig)])
 
         # Create a simple output map with script
-        key_script = PSBTKey(1, PSBT_OUT_SCRIPT, b'', PSBTMapType.OUTPUT)
-        val_script = PSBTVal(25, b'\x00' * 25)  # 25-byte script
-        output_map = PSBTMap([PSBTKeyVal(key_script, val_script)])
+        key_script = PSBTKey(key_len=1, key_type=PSBT_OUT_SCRIPT, key_data=b'', type=PSBTMapType.OUTPUT)
+        val_script = PSBTVal(val_len=25, val_data=b'\x00' * 25)  # 25-byte script
+        output_map = PSBTMap(map=[PSBTKeyVal(key=key_script, val=val_script)])
 
         vbytes = PSBTInfoParser.get_vbytes_v2([input_map], [output_map])
 
@@ -189,14 +189,14 @@ class TestGetVbytesV2:
     def test_get_vbytes_v2_single_segwit_input(self):
         """Test vbytes calculation for single SegWit input"""
         # Create input with witness script
-        key_witness = PSBTKey(1, PSBT_IN_FINAL_SCRIPTWITNESS, b'', PSBTMapType.INPUT)
-        val_witness = PSBTVal(100, b'\x00' * 100)
-        input_map = PSBTMap([PSBTKeyVal(key_witness, val_witness)])
+        key_witness = PSBTKey(key_len=1, key_type=PSBT_IN_FINAL_SCRIPTWITNESS, key_data=b'', type=PSBTMapType.INPUT)
+        val_witness = PSBTVal(val_len=100, val_data=b'\x00' * 100)
+        input_map = PSBTMap(map=[PSBTKeyVal(key=key_witness, val=val_witness)])
 
         # Create output
-        key_script = PSBTKey(1, PSBT_OUT_SCRIPT, b'', PSBTMapType.OUTPUT)
-        val_script = PSBTVal(22, b'\x00' * 22)  # P2WPKH size
-        output_map = PSBTMap([PSBTKeyVal(key_script, val_script)])
+        key_script = PSBTKey(key_len=1, key_type=PSBT_OUT_SCRIPT, key_data=b'', type=PSBTMapType.OUTPUT)
+        val_script = PSBTVal(val_len=22, val_data=b'\x00' * 22)  # P2WPKH size
+        output_map = PSBTMap(map=[PSBTKeyVal(key=key_script, val=val_script)])
 
         vbytes = PSBTInfoParser.get_vbytes_v2([input_map], [output_map])
 
@@ -207,15 +207,15 @@ class TestGetVbytesV2:
     def test_get_vbytes_v2_multiple_inputs(self):
         """Test vbytes calculation for multiple inputs"""
         # Create 2 witness inputs
-        key_witness = PSBTKey(1, PSBT_IN_FINAL_SCRIPTWITNESS, b'', PSBTMapType.INPUT)
-        val_witness = PSBTVal(100, b'\x00' * 100)
-        input_map1 = PSBTMap([PSBTKeyVal(key_witness, val_witness)])
-        input_map2 = PSBTMap([PSBTKeyVal(key_witness, val_witness)])
+        key_witness = PSBTKey(key_len=1, key_type=PSBT_IN_FINAL_SCRIPTWITNESS, key_data=b'', type=PSBTMapType.INPUT)
+        val_witness = PSBTVal(val_len=100, val_data=b'\x00' * 100)
+        input_map1 = PSBTMap(map=[PSBTKeyVal(key=key_witness, val=val_witness)])
+        input_map2 = PSBTMap(map=[PSBTKeyVal(key=key_witness, val=val_witness)])
 
         # Create output
-        key_script = PSBTKey(1, PSBT_OUT_SCRIPT, b'', PSBTMapType.OUTPUT)
-        val_script = PSBTVal(22, b'\x00' * 22)
-        output_map = PSBTMap([PSBTKeyVal(key_script, val_script)])
+        key_script = PSBTKey(key_len=1, key_type=PSBT_OUT_SCRIPT, key_data=b'', type=PSBTMapType.OUTPUT)
+        val_script = PSBTVal(val_len=22, val_data=b'\x00' * 22)
+        output_map = PSBTMap(map=[PSBTKeyVal(key=key_script, val=val_script)])
 
         vbytes = PSBTInfoParser.get_vbytes_v2([input_map1, input_map2], [output_map])
 
@@ -225,16 +225,16 @@ class TestGetVbytesV2:
     def test_get_vbytes_v2_multiple_outputs(self):
         """Test vbytes calculation for multiple outputs"""
         # Create input
-        key_witness = PSBTKey(1, PSBT_IN_FINAL_SCRIPTWITNESS, b'', PSBTMapType.INPUT)
-        val_witness = PSBTVal(100, b'\x00' * 100)
-        input_map = PSBTMap([PSBTKeyVal(key_witness, val_witness)])
+        key_witness = PSBTKey(key_len=1, key_type=PSBT_IN_FINAL_SCRIPTWITNESS, key_data=b'', type=PSBTMapType.INPUT)
+        val_witness = PSBTVal(val_len=100, val_data=b'\x00' * 100)
+        input_map = PSBTMap(map=[PSBTKeyVal(key=key_witness, val=val_witness)])
 
         # Create 3 outputs
-        key_script = PSBTKey(1, PSBT_OUT_SCRIPT, b'', PSBTMapType.OUTPUT)
-        val_script = PSBTVal(22, b'\x00' * 22)
-        output_map1 = PSBTMap([PSBTKeyVal(key_script, val_script)])
-        output_map2 = PSBTMap([PSBTKeyVal(key_script, val_script)])
-        output_map3 = PSBTMap([PSBTKeyVal(key_script, val_script)])
+        key_script = PSBTKey(key_len=1, key_type=PSBT_OUT_SCRIPT, key_data=b'', type=PSBTMapType.OUTPUT)
+        val_script = PSBTVal(val_len=22, val_data=b'\x00' * 22)
+        output_map1 = PSBTMap(map=[PSBTKeyVal(key=key_script, val=val_script)])
+        output_map2 = PSBTMap(map=[PSBTKeyVal(key=key_script, val=val_script)])
+        output_map3 = PSBTMap(map=[PSBTKeyVal(key=key_script, val=val_script)])
 
         vbytes = PSBTInfoParser.get_vbytes_v2([input_map], [output_map1, output_map2, output_map3])
 
@@ -251,19 +251,19 @@ class TestGetVbytesV2:
     def test_get_vbytes_v2_witness_flag_added_for_segwit(self):
         """Test that witness flag is added when SegWit data present"""
         # Create input with witness script
-        key_witness = PSBTKey(1, PSBT_IN_WITNESS_SCRIPT, b'', PSBTMapType.INPUT)
-        val_witness = PSBTVal(50, b'\x00' * 50)
-        input_map = PSBTMap([PSBTKeyVal(key_witness, val_witness)])
+        key_witness = PSBTKey(key_len=1, key_type=PSBT_IN_WITNESS_SCRIPT, key_data=b'', type=PSBTMapType.INPUT)
+        val_witness = PSBTVal(val_len=50, val_data=b'\x00' * 50)
+        input_map = PSBTMap(map=[PSBTKeyVal(key=key_witness, val=val_witness)])
 
         # Empty output
-        output_map = PSBTMap([])
+        output_map = PSBTMap(map=[])
 
         vbytes_segwit = PSBTInfoParser.get_vbytes_v2([input_map], [output_map])
 
         # Create legacy input (no witness)
-        key_scriptsig = PSBTKey(1, PSBT_IN_FINAL_SCRIPTSIG, b'', PSBTMapType.INPUT)
-        val_scriptsig = PSBTVal(50, b'\x00' * 50)
-        input_map_legacy = PSBTMap([PSBTKeyVal(key_scriptsig, val_scriptsig)])
+        key_scriptsig = PSBTKey(key_len=1, key_type=PSBT_IN_FINAL_SCRIPTSIG, key_data=b'', type=PSBTMapType.INPUT)
+        val_scriptsig = PSBTVal(val_len=50, val_data=b'\x00' * 50)
+        input_map_legacy = PSBTMap(map=[PSBTKeyVal(key=key_scriptsig, val=val_scriptsig)])
 
         vbytes_legacy = PSBTInfoParser.get_vbytes_v2([input_map_legacy], [output_map])
 

@@ -34,7 +34,7 @@ class TransactionParser:
         if peek_byte(buffer) == b'\x00': # segwit transaction
             is_segwit = True
             marker = buffer.read(1) # consume the 0x00 marker byte
-            witness_flag = buffer.read(1) # consume the 0x01 flag byte
+            witness_flag = int.from_bytes(buffer.read(1), byteorder='little') # consume the 0x01 flag byte
 
         # Parse inputs and outputs
         input_ct, _ = parse_compact_size(buffer)
@@ -56,7 +56,7 @@ class TransactionParser:
         weight = (tx_size * 4) + witness_size
         vbytes = weight / 4
 
-        return Transaction(version, witness_flag, inputs, outputs, witness_stacks, locktime, vbytes)
+        return Transaction(version=version, witness_flag=witness_flag, inputs=inputs, outputs=outputs, witness=witness_stacks, locktime=locktime, vbytes=vbytes)
 
     @staticmethod
     def parse_input(buffer):
@@ -77,7 +77,7 @@ class TransactionParser:
         ss_size, _ = parse_compact_size(buffer)
         ss = buffer.read(ss_size)
         seq = buffer.read(4)
-        return TXInput(txid, vout, ss_size, ss, seq)
+        return TXInput(txid=txid, vout=vout, ss_size=ss_size, ss=ss, seq=seq)
 
     @staticmethod
     def parse_output(buffer):
@@ -96,7 +96,7 @@ class TransactionParser:
         amount = int.from_bytes(amount_bytes, byteorder='little')
         spk_size, _ = parse_compact_size(buffer)
         spk = buffer.read(spk_size)
-        return TXOutput(amount, spk_size, spk)
+        return TXOutput(amount=amount, spk_size=spk_size, spk=spk)
 
     @staticmethod
     def parse_witness(buffer, input_count):
@@ -119,8 +119,8 @@ class TransactionParser:
             for j in range(stack_item_count):
                 stack_item_size, _ = parse_compact_size(buffer)
                 stack_item_data = buffer.read(stack_item_size)
-                stack_item = TXWitnessStackItem(stack_item_size, stack_item_data)
+                stack_item = TXWitnessStackItem(stack_item_size=stack_item_size, stack_item=stack_item_data)
                 stack_items.append(stack_item)
-            witness_stack = TXWitnessStack(stack_items)
+            witness_stack = TXWitnessStack(witness_items=stack_items)
             witness_stacks.append(witness_stack)
         return witness_stacks

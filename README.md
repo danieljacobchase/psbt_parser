@@ -35,6 +35,7 @@ PSBTs move through workflow stages:
 - ✅ Compare fees against real-time mempool data
 - ✅ Support for both legacy and SegWit transactions
 - ✅ Handle multi-signature workflows
+- ✅ Pydantic type validation for all Bitcoin data structures
 
 ## Project Organization
 
@@ -75,7 +76,12 @@ psbt_parser/
 ## Prerequisites
 
 - **Python 3.11+** (uses modern type hint syntax)
-- **No external dependencies** - uses only Python standard library
+- **Pydantic 2.x** - for data validation and parsing
+
+Install dependencies:
+```bash
+pip install pydantic
+```
 
 ## Running the Parser
 
@@ -263,6 +269,25 @@ python psbt_parser.py sample_data/raw/v2_p2wpkh_4_finalizer.txt
 - **BIP-compliant**: Strictly follows BIP-174 and BIP-370 specifications
 - **Error handling**: Gracefully handles early-stage PSBTs and invalid formats
 - **Type safety**: Extensive use of type hints for better code clarity
+- **Runtime validation**: Pydantic models validate Bitcoin data structures at runtime
+
+### Data Validation
+
+All Bitcoin data structures use Pydantic models with built-in validation:
+
+**Field Constraints:**
+- Transaction IDs must be exactly 32 bytes
+- Sequence numbers must be exactly 4 bytes
+- Amounts must be non-negative integers
+- Witness flags must be 0 or 1
+- PSBT versions must be 0 or 2 (v1 does not exist per BIP-370)
+
+**Cross-field Validation:**
+- Size fields must match actual data length (e.g., `spk_size` == `len(spk)`)
+- Key length must equal key data length + compact_size length of key_type
+- Value length must match value data length
+
+This ensures malformed or invalid Bitcoin data is caught immediately with clear error messages.
 
 ### Script Type Detection
 

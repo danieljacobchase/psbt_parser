@@ -196,7 +196,7 @@ class PSBTInfoParser:
             address_type = PSBTInfoParser.SCRIPT_TYPE_TO_ADDRESS_TYPE.get(script_type, "Unknown")
 
             # add to input list
-            input_list.append(PSBTInOutInfo(amount, address_type, script_type))
+            input_list.append(PSBTInOutInfo(amount=amount, address_type=address_type, script_type=script_type))
 
         # Get Outputs (Different for v0 and v2)
         output_list = []
@@ -209,7 +209,7 @@ class PSBTInfoParser:
                 # determine address type
                 address_type = PSBTInfoParser.SCRIPT_TYPE_TO_ADDRESS_TYPE.get(script_type, "Unknown")
                 # add to output list
-                output_list.append(PSBTInOutInfo(amount, address_type, script_type))
+                output_list.append(PSBTInOutInfo(amount=amount, address_type=address_type, script_type=script_type))
         else:
             for i in range(len(psbt.output_maps)):
                 output_map = psbt.output_maps[i]
@@ -222,7 +222,7 @@ class PSBTInfoParser:
                 # determine address type
                 address_type = PSBTInfoParser.SCRIPT_TYPE_TO_ADDRESS_TYPE.get(script_type, "Unknown")
                 # add to output list
-                output_list.append(PSBTInOutInfo(amount, address_type, script_type))
+                output_list.append(PSBTInOutInfo(amount=amount, address_type=address_type, script_type=script_type))
 
         # Calculate fee
         input_total = sum(input.amount for input in input_list)
@@ -246,4 +246,4 @@ class PSBTInfoParser:
                 derivation = PSBTKeyParser.parse_key_PSBT_OUT_BIP32_DERIVATION(output_map.map[deriv_index].val.val_data)
                 change_output[i] = derivation.is_change
 
-        return PSBTInfo(psbt.version, input_total, output_total, fee, fee_rate, vbytes, change_output, input_list, output_list)
+        return PSBTInfo(version=psbt.version, total_input_amt=input_total, total_output_amt=output_total, fee_amt=fee, fee_rate=fee_rate, vbytes=vbytes, change_output=change_output, inputs=input_list, outputs=output_list)

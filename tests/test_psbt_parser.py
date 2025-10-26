@@ -72,7 +72,7 @@ class TestParseKey:
         assert key.key_len == 1
         assert key.key_type == 0x00
         assert key.key_data == b''
-        assert key.type == PSBTMapType.GLOBAL
+        assert key.map_type == PSBTMapType.GLOBAL
 
     def test_parse_key_with_data(self):
         """Test parsing key with additional data"""
@@ -83,7 +83,7 @@ class TestParseKey:
         assert key.key_len == 5
         assert key.key_type == 0x01
         assert key.key_data == b'\xaa\xbb\xcc\xdd'
-        assert key.type == PSBTMapType.INPUT
+        assert key.map_type == PSBTMapType.INPUT
 
     def test_parse_key_global_unsigned_tx(self):
         """Test parsing PSBT_GLOBAL_UNSIGNED_TX key"""
@@ -103,7 +103,7 @@ class TestParseKey:
         assert key.key_len == 34
         assert key.key_type == 0x06
         assert key.key_data == pubkey
-        assert key.type == PSBTMapType.OUTPUT
+        assert key.map_type == PSBTMapType.OUTPUT
 
     def test_parse_key_buffer_position(self):
         """Test that buffer position advances correctly"""
@@ -203,21 +203,21 @@ class TestParseMap:
         buffer = BytesIO(b'\x01\x00\x04\x01\x02\x03\x04\x00')
         psbt_map = PSBTParser.parse_map(buffer, PSBTMapType.GLOBAL)
 
-        assert psbt_map.map[0].key.type == PSBTMapType.GLOBAL
+        assert psbt_map.map[0].key.map_type == PSBTMapType.GLOBAL
 
     def test_parse_map_input_type(self):
         """Test parsing INPUT map type"""
         buffer = BytesIO(b'\x01\x01\x02\xaa\xbb\x00')
         psbt_map = PSBTParser.parse_map(buffer, PSBTMapType.INPUT)
 
-        assert psbt_map.map[0].key.type == PSBTMapType.INPUT
+        assert psbt_map.map[0].key.map_type == PSBTMapType.INPUT
 
     def test_parse_map_output_type(self):
         """Test parsing OUTPUT map type"""
         buffer = BytesIO(b'\x01\x02\x01\xcc\x00')
         psbt_map = PSBTParser.parse_map(buffer, PSBTMapType.OUTPUT)
 
-        assert psbt_map.map[0].key.type == PSBTMapType.OUTPUT
+        assert psbt_map.map[0].key.map_type == PSBTMapType.OUTPUT
 
 
 class TestParsePsbt:
@@ -239,18 +239,22 @@ class TestParsePsbt:
         """Test parsing minimal PSBT v0"""
         # Magic bytes + separator
         magic = b'psbt\xff'
-        # Global map: PSBT_GLOBAL_UNSIGNED_TX key with minimal tx
-        # Minimal tx: version(4) + input_count(1) + output_count(1) + locktime(4) = 10 bytes
-        minimal_tx = b'\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+        # Global map: PSBT_GLOBAL_UNSIGNED_TX key with minimal valid tx (1 input, 1 output)
+        minimal_tx = (b'\x01\x00\x00\x00' +  # version
+                      b'\x01' + b'\xaa' * 32 + b'\x00\x00\x00\x00' + b'\x00' + b'\xff\xff\xff\xff' +  # 1 input
+                      b'\x01' + (1000).to_bytes(8, 'little') + b'\x01\x00' +  # 1 output with 1-byte script
+                      b'\x00\x00\x00\x00')  # locktime
         global_map = b'\x01\x00' + bytes([len(minimal_tx)]) + minimal_tx + b'\x00'
-        # No input/output maps (counts are 0)
+        # 1 input map and 1 output map (both empty)
+        input_map = b'\x00'
+        output_map = b'\x00'
 
-        buffer = BytesIO(magic + global_map)
+        buffer = BytesIO(magic + global_map + input_map + output_map)
         psbt = PSBTParser.parse_psbt(buffer)
 
         assert psbt.version == 0
-        assert len(psbt.input_maps) == 0
-        assert len(psbt.output_maps) == 0
+        assert len(psbt.input_maps) == 1
+        assert len(psbt.output_maps) == 1
 
     def test_parse_psbt_v2_minimal(self):
         """Test parsing minimal PSBT v2"""
