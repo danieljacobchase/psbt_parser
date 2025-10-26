@@ -111,7 +111,7 @@ class PSBTInOutInfo:
 class PSBTInfo:
     """Information extracted from a PSBT."""
 
-    def __init__(self, version: int, total_input_amt: int, total_output_amt: int, fee_amt: int, fee_rate: float, change_output: list[bool], inputs: list, outputs: list):
+    def __init__(self, version: int, total_input_amt: int, total_output_amt: int, fee_amt: int, fee_rate: float, vbytes: float, change_output: list[bool], inputs: list, outputs: list):
         """
         Initialize a PSBTInfo object.
 
@@ -121,6 +121,7 @@ class PSBTInfo:
             total_output_amt: Total output amount in satoshis
             fee_amt: Transaction fee in satoshis
             fee_rate: Fee rate in sats/vbyte
+            vbytes: Transaction size in virtual bytes
             change_output: Bool array indicating which outputs are change
             inputs: List of input information
             outputs: List of output information
@@ -130,6 +131,7 @@ class PSBTInfo:
         self.total_output_amt = total_output_amt
         self.fee_amt = fee_amt
         self.fee_rate = fee_rate
+        self.vbytes = vbytes
         self.change_output = change_output
         self.inputs = inputs
         self.outputs = outputs
@@ -145,6 +147,7 @@ class PSBTInfo:
             "total_output_amt": self.total_output_amt,
             "fee_amt": self.fee_amt,
             "fee_rate": self.fee_rate,
+            "vbytes": self.vbytes,
             "change_output": change_output_str,
             "inputs": [json.loads(inp.to_string()) for inp in self.inputs],
             "outputs": [json.loads(out.to_string()) for out in self.outputs]

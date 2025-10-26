@@ -246,4 +246,4 @@ class PSBTInfoParser:
                 derivation = PSBTKeyParser.parse_key_PSBT_OUT_BIP32_DERIVATION(output_map.map[deriv_index].val.val_data)
                 change_output[i] = derivation.is_change
 
-        return PSBTInfo(psbt.version, input_total, output_total, fee, fee_rate, change_output, input_list, output_list)
+        return PSBTInfo(psbt.version, input_total, output_total, fee, fee_rate, vbytes, change_output, input_list, output_list)

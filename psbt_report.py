@@ -34,12 +34,13 @@ class PSBTReport:
 
         # Transaction Summary with fee assessment
         print(f"\nTransaction Summary:")
-        print(f"  Total Input:  {psbt_info.total_input_amt:,} sats")
-        print(f"  Total Output: {psbt_info.total_output_amt:,} sats")
-        print(f"  Fee:          {psbt_info.fee_amt:,} sats")
-        print(f"  Fee Rate:     ~{round(psbt_info.fee_rate)} sat/vB")
+        print(f"  Total Input:      {psbt_info.total_input_amt:,} sats")
+        print(f"  Total Output:     {psbt_info.total_output_amt:,} sats")
+        print(f"  Transaction Size: ~{psbt_info.vbytes} vB")
+        print(f"  Fee:              {psbt_info.fee_amt:,} sats")
+        print(f"  Fee Rate:         ~{round(psbt_info.fee_rate)} sat/vB")
 
-        # Fee assessment
+        # Display recommended fee rates and fee assessment
         if recommended_fee_rates:
             minimum_fee = recommended_fee_rates.get("minimumFee", 1)
             economy_fee = recommended_fee_rates.get("economyFee", 1)
@@ -48,26 +49,33 @@ class PSBTReport:
             fastest_fee = recommended_fee_rates.get("fastestFee", 1)
 
             if minimum_fee == economy_fee == hour_fee == half_hour_fee == fastest_fee == 1:
-                print("  Assessment:   Mempool is empty - transaction should confirm in next block regardless of fee")
+                print("  Assessment:       Mempool is empty - transaction should confirm in next block regardless of fee")
                 if psbt_info.fee_rate > 2:
-                    print("                Note: Supplied fee is excessive for current mempool conditions")
+                    print("                    Note: Supplied fee is excessive for current mempool conditions")
             elif psbt_info.fee_rate < minimum_fee:
-                print("  Assessment:   Fee rate is too low")
+                print("  Assessment:       Fee rate is too low")
             elif psbt_info.fee_rate < economy_fee:
-                print("  Assessment:   Transaction could take several hours to days to confirm")
+                print("  Assessment:       Transaction could take several hours to days to confirm")
             elif psbt_info.fee_rate < hour_fee:
-                print("  Assessment:   Transaction could take more than an hour to confirm")
+                print("  Assessment:       Transaction could take more than an hour to confirm")
             elif psbt_info.fee_rate < half_hour_fee:
-                print("  Assessment:   Transaction should confirm between 30 minutes and an hour")
+                print("  Assessment:       Transaction should confirm between 30 minutes and an hour")
             elif psbt_info.fee_rate < fastest_fee:
-                print("  Assessment:   Transaction should take less than 30 minutes to confirm")
+                print("  Assessment:       Transaction should take less than 30 minutes to confirm")
             elif psbt_info.fee_rate <= 1.5 * fastest_fee:
-                print("  Assessment:   Transaction should confirm in less than 10 minutes")
+                print("  Assessment:       Transaction should confirm in less than 10 minutes")
             elif psbt_info.fee_rate < 3 * fastest_fee:
-                print("  Assessment:   Fee rate is high but tolerable")
+                print("  Assessment:       Fee rate is high but tolerable")
             else:
-                print("  Assessment:   Fee rate is excessive/wasteful")
+                print("  Assessment:       Fee rate is excessive/wasteful")
         else:
-            print("  Assessment:   Could not fetch recommended fee rates from mempool API")
+            print("  Assessment:       Could not fetch recommended fee rates from mempool API")
 
-        print("="*60 + "\n")
+        print(f"\nRecommended Fee Rates (mempool.space):")
+        print(f"  Fastest (<10 min):  {fastest_fee} sat/vB")
+        print(f"  Half Hour:          {half_hour_fee} sat/vB")
+        print(f"  One Hour:           {hour_fee} sat/vB")
+        print(f"  Economy:            {economy_fee} sat/vB")
+        print(f"  Minimum:            {minimum_fee} sat/vB")
+
+        print("\n" + "="*60 + "\n")

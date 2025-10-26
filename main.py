@@ -16,9 +16,16 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Read PSBT from file and load into buffer
-    with open(sys.argv[1], 'r') as f:
-        hex_string = f.read().strip()
-    byte_data = bytes.fromhex(hex_string)
+    filename = sys.argv[1]
+    if filename.endswith('.psbt'):
+        # Binary PSBT file
+        with open(filename, 'rb') as f:
+            byte_data = f.read()
+    else:
+        # Hex-encoded PSBT file (.txt or other)
+        with open(filename, 'r') as f:
+            hex_string = f.read().strip()
+        byte_data = bytes.fromhex(hex_string)
     buffer = BytesIO(byte_data)
 
     # Parse PSBT

@@ -27,7 +27,7 @@ PSBTs move through workflow stages:
 
 ## Features
 
-- ✅ Parse PSBT v0 and v2 transactions from hex format
+- ✅ Parse PSBT v0 and v2 transactions from hex or binary format
 - ✅ Extract transaction details (inputs, outputs, amounts)
 - ✅ Identify script types (P2PKH, P2SH, P2WPKH, P2WSH, P2TR)
 - ✅ Calculate transaction fees and fee rates (sat/vB)
@@ -56,10 +56,13 @@ psbt_parser/
 ├── api/                      # External API clients
 │   └── mempool.py           # Mempool.space fee rate API
 └── sample_data/             # Sample PSBT files (22 test cases)
-    ├── v0_p2wpkh_*.txt      # PSBT v0 single-sig workflow
-    ├── v0_multisig_*.txt    # PSBT v0 multisig (2-of-2) workflow
-    ├── v2_p2wpkh_*.txt      # PSBT v2 single-sig workflow
-    └── v2_multisig_*.txt    # PSBT v2 multisig workflow
+    ├── raw/                 # Hex-encoded PSBT files
+    │   ├── v0_p2wpkh_*.txt      # PSBT v0 single-sig workflow
+    │   ├── v0_multisig_*.txt    # PSBT v0 multisig (2-of-2) workflow
+    │   ├── v2_p2wpkh_*.txt      # PSBT v2 single-sig workflow
+    │   └── v2_multisig_*.txt    # PSBT v2 multisig workflow
+    └── psbt/                # Binary PSBT files
+        └── *.psbt
 ```
 
 ### Architecture
@@ -78,66 +81,68 @@ psbt_parser/
 
 ### Basic Usage
 
-Parse and analyze a PSBT file:
+Parse and analyze a PSBT file (supports both hex-encoded and binary formats):
 
 ```bash
-python main.py sample_data/v0_p2wpkh_3_finalizer.txt
+# Hex-encoded PSBT (.txt)
+python main.py sample_data/raw/v0_p2wpkh_3_finalizer.txt
+
+# Binary PSBT (.psbt)
+python main.py sample_data/psbt/v0_p2wpkh_3_finalizer.psbt
 ```
 
 ### Input Format
 
-The parser expects a text file containing a hex-encoded PSBT:
+The parser accepts two input formats:
 
+**Hex-encoded text files** (.txt):
 ```
 70736274ff01005...  # PSBT in hexadecimal format
+```
+
+**Binary PSBT files** (.psbt):
+```
+Raw binary PSBT data
 ```
 
 ### Example Output
 
 ```
-=== PSBT Transaction Analysis ===
+============================================================
+PSBT SUMMARY
+============================================================
 
 PSBT Version: 0
 
---- Inputs ---
-Input 0:
-  Amount: 100000000 sats (1.00000000 BTC)
-  Address Type: Native SegWit (bech32)
-  Script Type: P2WPKH
+Inputs (1):
+  [0] 30,000 sats | Native SegWit (bech32) | P2WPKH
 
-Total Input: 100000000 sats (1.00000000 BTC)
+Outputs (1):
+  [0] 25,000 sats | Native SegWit (bech32) | P2WPKH
 
---- Outputs ---
-Output 0:
-  Amount: 99950000 sats (0.99950000 BTC)
-  Address Type: Native SegWit (bech32)
-  Script Type: P2WPKH
-
-Output 1 (CHANGE):
-  Amount: 45000 sats (0.00045000 BTC)
-  Address Type: Native SegWit (bech32)
-  Script Type: P2WPKH
-
-Total Output: 99995000 sats (0.99995000 BTC)
-
---- Fee Analysis ---
-Fee: 5000 sats (0.00005000 BTC)
-Transaction Size: 141 vbytes
-Fee Rate: 35.46 sat/vB
+Transaction Summary:
+  Total Input:      30,000 sats
+  Total Output:     25,000 sats
+  Transaction Size: ~82.0 vB
+  Fee:              5,000 sats
+  Fee Rate:         ~61 sat/vB
+  Assessment:       Fee rate is excessive/wasteful
 
 Recommended Fee Rates (mempool.space):
-  Fast (next block): 40 sat/vB
-  Normal (30 min): 30 sat/vB
-  Slow (1 hour): 20 sat/vB
+  Fastest (<10 min):  3 sat/vB
+  Half Hour:          1 sat/vB
+  One Hour:           1 sat/vB
+  Economy:            1 sat/vB
+  Minimum:            1 sat/vB
 
-Assessment: Normal - should confirm within 30 minutes
+============================================================
 ```
 
 ### Handling Different PSBT Stages
 
 **Early-stage PSBTs** (creator/constructor without UTXO data):
 ```bash
-python main.py sample_data/v2_p2wpkh_0_creator.txt
+python main.py sample_data/raw/v2_p2wpkh_0_creator.txt
 ```
 Output:
 ```
@@ -151,7 +156,7 @@ Outputs: 0
 
 **Fully-signed PSBTs** (finalizer stage):
 ```bash
-python main.py sample_data/v0_multisig_5_finalizer.txt
+python main.py sample_data/raw/v0_multisig_5_finalizer.txt
 ```
 
 ## Running Tests
@@ -229,25 +234,25 @@ All tests are **unit tests** that verify function-level behavior with crafted in
 ### Analyzing a Single-Sig Transaction
 
 ```bash
-# Parse a finalizer-stage PSBT (ready to broadcast)
-python main.py sample_data/v0_p2wpkh_3_finalizer.txt
+# Parse a finalizer-stage PSBT (ready to broadcast) - hex format
+python main.py sample_data/raw/v0_p2wpkh_3_finalizer.txt
 ```
 
 ### Analyzing a Multisig Transaction
 
 ```bash
-# Parse a 2-of-2 multisig PSBT after both signatures
-python main.py sample_data/v0_multisig_5_finalizer.txt
+# Parse a 2-of-2 multisig PSBT after both signatures - binary format
+python main.py sample_data/psbt/v0_multisig_5_finalizer.psbt
 ```
 
 ### Comparing v0 vs v2 Formats
 
 ```bash
 # PSBT v0 format
-python main.py sample_data/v0_p2wpkh_3_finalizer.txt
+python main.py sample_data/raw/v0_p2wpkh_3_finalizer.txt
 
 # PSBT v2 format
-python main.py sample_data/v2_p2wpkh_4_finalizer.txt
+python main.py sample_data/raw/v2_p2wpkh_4_finalizer.txt
 ```
 
 ## Implementation Details
