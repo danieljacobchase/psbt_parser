@@ -2,7 +2,7 @@
 Bitcoin transaction parsing functions
 """
 from models.transaction import Transaction, TXInput, TXOutput, TXWitnessStack, TXWitnessStackItem
-from .utils import parse_compact_size, peek_byte, get_remaining_bytes
+from .parser_utils import parse_compact_size, peek_byte, get_remaining_bytes
 
 
 class TransactionParser:

@@ -5,7 +5,7 @@ from io import BytesIO
 from models.psbt import *
 from models.constants import PSBT_GLOBAL_UNSIGNED_TX, PSBT_GLOBAL_INPUT_COUNT, PSBT_GLOBAL_OUTPUT_COUNT, PSBT_GLOBAL_TX_VERSION
 from .transaction_parser import TransactionParser
-from .utils import parse_compact_size, peek_byte
+from .parser_utils import parse_compact_size, peek_byte
 
 class PSBTParser:
     """Parser for Partially Signed Bitcoin Transactions."""

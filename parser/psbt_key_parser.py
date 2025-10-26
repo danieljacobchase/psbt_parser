@@ -25,7 +25,7 @@ class PSBTKeyParser:
         Returns:
             PsbtKeyInWitnessUTXO: Parsed witness UTXO information
         """
-        from parser.utils import parse_compact_size
+        from parser.parser_utils import parse_compact_size
         buffer = BytesIO(data)
 
         # retrieve UTXO amount in sats (8 bytes)
