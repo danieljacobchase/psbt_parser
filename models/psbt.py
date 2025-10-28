@@ -3,7 +3,7 @@ PSBT data structure classes
 """
 import json
 from enum import Enum
-from pydantic import BaseModel, Field, model_validator, ConfigDict
+from pydantic import BaseModel, Field, model_validator, field_validator, ConfigDict
 from models.constants import PSBT_GLOBAL_TYPES, PSBT_IN_TYPES, PSBT_OUT_TYPES
 
 class PSBTMapType(Enum):
@@ -91,10 +91,17 @@ class PSBTMap(BaseModel):
         return json.dumps(map_list, indent=2)
 
 class PSBT(BaseModel):
-    version: int = Field(ge=0, le=2)  # PSBT version must be 0 or 2 (no v1 exists)
+    version: int = Field(ge=0)  # PSBT version must be 0 or 2 (no v1 exists)
     global_map: PSBTMap
     input_maps: list[PSBTMap]
     output_maps: list[PSBTMap]
+
+    @field_validator('version')
+    @classmethod
+    def validate_version(cls, v: int) -> int:
+        if v not in (0, 2):
+            raise ValueError(f'PSBT version must be 0 or 2 (v1 does not exist), got {v}')
+        return v
 
     def to_string(self):
         return json.dumps({
@@ -124,7 +131,7 @@ class PSBTInOutInfo(BaseModel):
 class PSBTInfo(BaseModel):
     """Information extracted from a PSBT."""
 
-    version: int = Field(ge=0, le=2)  # PSBT version (0, 1, or 2)
+    version: int = Field(ge=0)  # PSBT version must be 0 or 2 (no v1 exists)
     total_input_amt: int = Field(ge=0)
     total_output_amt: int = Field(ge=0)
     fee_amt: int = Field(ge=0)
@@ -133,6 +140,13 @@ class PSBTInfo(BaseModel):
     change_output: list[bool]
     inputs: list[PSBTInOutInfo]
     outputs: list[PSBTInOutInfo]
+
+    @field_validator('version')
+    @classmethod
+    def validate_version(cls, v: int) -> int:
+        if v not in (0, 2):
+            raise ValueError(f'PSBT version must be 0 or 2 (v1 does not exist), got {v}')
+        return v
 
     def to_string(self):
         """Convert to JSON string representation."""
